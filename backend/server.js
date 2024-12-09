@@ -67,6 +67,7 @@ app.post('/api/chat', async (req, res) => {
   }
 });
 
+/*
 app.post('/api/chat-text', async (req, res) => {
   const { userMessage } = req.body;
 
@@ -99,6 +100,35 @@ app.post('/api/chat-text', async (req, res) => {
     }
   }
 });
+*/
+app.post('/api/chat-text', async (req, res) => {
+  const { messages } = req.body;
+
+  if (!messages || !Array.isArray(messages)) {
+    return res.status(400).json({ error: 'Messages array is required' });
+  }
+
+  try {
+    const completion = await openai.chat.completions.create({
+      model: 'gpt-4o-mini',
+      messages: messages, // Pass the entire conversation history
+    });
+
+    const botMessage = completion.choices[0].message.content.trim();
+    console.log('Response from OpenAI (text):', botMessage);
+
+    res.json({ response: botMessage });
+  } catch (error) {
+    console.error('Error fetching from OpenAI:', error);
+
+    if (error.response && error.response.status === 429) {
+      res.status(429).json({ error: 'Rate limit exceeded. Please try again later.' });
+    } else {
+      res.status(500).json({ error: 'Error communicating with OpenAI' });
+    }
+  }
+});
+
 
 app.listen(PORT, () => {
   console.log(`Server is running on http://localhost:${PORT}`);

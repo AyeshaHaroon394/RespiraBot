@@ -23,13 +23,19 @@ function App() {
       setLoading(true);
 
       try {
-        // Send the user's message to the API
+        // Prepare the chat history payload
+        const chatHistory = [...messages, userMessage].map((message) => ({
+          role: message.sender === 'user' ? 'user' : 'assistant',
+          content: message.content,
+        }));
+
+        // Send the entire chat history to the API
         const response = await fetch('http://localhost:5000/api/chat-text', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify({ userMessage: input }),
+          body: JSON.stringify({ messages: chatHistory }),
         });
 
         if (!response.ok) {
