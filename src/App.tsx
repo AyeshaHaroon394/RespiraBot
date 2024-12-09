@@ -22,38 +22,33 @@ function App() {
       setInput('');
       setLoading(true);
 
-      const eventSource = new EventSource(
-        `http://localhost:5000/api/chat?message=${encodeURIComponent(input)}`
-      );
+      try {
+        // Send the user's message to the API
+        const response = await fetch('http://localhost:5000/api/chat-text', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ userMessage: input }),
+        });
 
-      eventSource.onopen = () => {
-        console.log('Stream opened');
-      };
-
-      eventSource.onmessage = (event) => {
-        console.log('Received message:', event.data);
-        if (event.data && event.data !== 'Stream finished') {
-          const botMessage: Message = { sender: 'bot', content: event.data };
-          setMessages((prevMessages) => [...prevMessages, botMessage]);
+        if (!response.ok) {
+          throw new Error('Failed to fetch the bot response.');
         }
-        setLoading(false);
-      };
 
-      eventSource.onerror = (error) => {
-        console.error('Stream error:', error);
-        setLoading(false);
-        eventSource.close();
-
+        const data = await response.json();
+        const botMessage: Message = { sender: 'bot', content: data.response };
+        setMessages((prevMessages) => [...prevMessages, botMessage]);
+      } catch (error) {
+        console.error('Error fetching bot response:', error);
         const errorMessage: Message = {
           sender: 'bot',
-          content: 'An error occurred while fetching a response.',
+          content: 'An error occurred while fetching the response. Please try again.',
         };
         setMessages((prevMessages) => [...prevMessages, errorMessage]);
-      };
-
-      return () => {
-        eventSource.close();
-      };
+      } finally {
+        setLoading(false);
+      }
     }
   };
 
@@ -80,7 +75,9 @@ function App() {
               onChange={handleInputChange}
               placeholder="Type a message..."
             />
-            <button onClick={handleSendMessage}>Send</button>
+            <button onClick={handleSendMessage} disabled={loading}>
+              Send
+            </button>
           </div>
         </div>
       </header>
