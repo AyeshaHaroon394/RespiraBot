@@ -3,6 +3,8 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
+    "@testing-library/react": "^16.1.0",
+    "@types/testing-library__react": "^10.2.0",
     "cra-template-typescript": "1.2.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
@@ -31,5 +33,10 @@
       "last 1 firefox version",
       "last 1 safari version"
     ]
+  },
+  "devDependencies": {
+    "@types/mocha": "^10.0.10",
+    "@types/react": "^19.0.1",
+    "@types/react-dom": "^19.0.1"
   }
 }
