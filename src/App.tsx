@@ -22,8 +22,9 @@ function App() {
       setInput('');
       setLoading(true);
 
-      // Create an EventSource to handle streaming response
-      const eventSource = new EventSource(`http://localhost:5000/api/chat?message=${encodeURIComponent(input)}`);
+      const eventSource = new EventSource(
+        `http://localhost:5000/api/chat?message=${encodeURIComponent(input)}`
+      );
 
       eventSource.onopen = () => {
         console.log('Stream opened');
@@ -35,18 +36,21 @@ function App() {
           const botMessage: Message = { sender: 'bot', content: event.data };
           setMessages((prevMessages) => [...prevMessages, botMessage]);
         }
+        setLoading(false);
       };
 
       eventSource.onerror = (error) => {
         console.error('Stream error:', error);
         setLoading(false);
-        eventSource.close(); // Close the connection when an error occurs
+        eventSource.close();
 
-        const errorMessage: Message = { sender: 'bot', content: 'An error occurred while fetching a response.' };
+        const errorMessage: Message = {
+          sender: 'bot',
+          content: 'An error occurred while fetching a response.',
+        };
         setMessages((prevMessages) => [...prevMessages, errorMessage]);
       };
 
-      // Close the connection manually when the component is unmounted or you want to stop the connection
       return () => {
         eventSource.close();
       };
@@ -57,22 +61,27 @@ function App() {
     <div className="App">
       <header className="App-header">
         <h1>Chatbot</h1>
-        <div className="chat-window">
-          {messages.map((message, index) => (
-            <div key={index} className={`message ${message.sender}`}>
-              <p>{message.content}</p>
-            </div>
-          ))}
-          {loading && <div className="loading">Bot is typing...</div>}
-        </div>
-        <div className="input-section">
-          <input
-            type="text"
-            value={input}
-            onChange={handleInputChange}
-            placeholder="Type a message..."
-          />
-          <button onClick={handleSendMessage}>Send</button>
+        <div className="chat-container">
+          <div className="chat-window">
+            {messages.map((message, index) => (
+              <div
+                key={index}
+                className={`message ${message.sender === 'user' ? 'user' : 'bot'}`}
+              >
+                <p>{message.content}</p>
+              </div>
+            ))}
+            {loading && <div className="loading">Bot is typing...</div>}
+          </div>
+          <div className="input-section">
+            <input
+              type="text"
+              value={input}
+              onChange={handleInputChange}
+              placeholder="Type a message..."
+            />
+            <button onClick={handleSendMessage}>Send</button>
+          </div>
         </div>
       </header>
     </div>
